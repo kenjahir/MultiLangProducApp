@@ -1,13 +1,35 @@
 import React from 'react';
-import { LanguageProvider } from './src/context/LanguageContext';
-import HomeScreen from './src/screens/HomeScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const App = () => {
-  return (
-    <LanguageProvider>
-      <HomeScreen />
-    </LanguageProvider>
-  );
+import LoginScreen from './src/screens/LoginScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import { LanguageProvider } from './src/context/LanguageContext';
+
+export type RootStackParamList = {
+  Login: undefined;
+  Home: undefined;
 };
 
-export default App;
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ title: 'Listado de Productos' }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </LanguageProvider>
+  );
+}

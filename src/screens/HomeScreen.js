@@ -29,7 +29,7 @@ const INITIAL_PRODUCTS = [
   },
 ];
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const { language, toggleLanguage } = useContext(LanguageContext);
   const [photoUri, setPhotoUri] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -106,6 +106,10 @@ export default function HomeScreen() {
     setPhotoUri(null);
   };
 
+  const handleLogout = () => {
+    navigation.replace('Login');
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -177,6 +181,13 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#dc3545' }]}
+        onPress={handleLogout}
+      >
+        <Text style={styles.buttonText}>Cerrar Sesión</Text>
+      </TouchableOpacity>
     </View>
   );
 }
