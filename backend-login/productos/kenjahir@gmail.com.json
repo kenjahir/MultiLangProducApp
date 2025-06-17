@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "name": {
+      "es": "Pan",
+      "en": "Bread"
+    },
+    "description": {
+      "es": "Delicioso pan",
+      "en": "Tasty bread"
+    },
+    "photoUri": "http://ejemplo.com/pan.jpg"
+  },
+  {
+    "id": "2",
+    "name": {
+      "es": "Café",
+      "en": "Coffee"
+    },
+    "description": {
+      "es": "Bebida caliente",
+      "en": "Hot drink"
+    },
+    "photoUri": "http://ejemplo.com/cafe.jpg"
+  }
+]
