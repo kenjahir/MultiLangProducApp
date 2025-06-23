@@ -5,8 +5,10 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 export default function RegisterScreen({ route }) {
@@ -17,7 +19,9 @@ export default function RegisterScreen({ route }) {
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
   const [direccion, setDireccion] = useState('');
-  const [verClave, setVerClave] = useState(false); // 👁️ añadido
+  const [telefono, setTelefono] = useState('');
+  const [imagen, setImagen] = useState(null);
+  const [verClave, setVerClave] = useState(false);
 
   useEffect(() => {
     if (route.params?.direccionSeleccionada && isFocused) {
@@ -27,22 +31,35 @@ export default function RegisterScreen({ route }) {
     }
   }, [route.params, isFocused]);
 
+  const seleccionarImagen = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      includeBase64: true,
+      quality: 0.5,
+    });
+
+    if (!result.didCancel && result.assets && result.assets.length > 0) {
+      const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      setImagen(base64Image);
+    }
+  };
+
   const handleRegistro = async () => {
-    if (!nombre || !correo || !clave || !direccion) {
+    if (!nombre || !correo || !clave || !direccion || !telefono || !imagen) {
       Alert.alert('❌ Campos incompletos', 'Por favor completa todos los campos.');
       return;
     }
 
     try {
-       const response = await fetch('http://192.168.0.105:3000/api/usuarios/register', {
+      const response = await fetch('http://192.168.0.105:3000/api/usuarios/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ nombre, correo, clave, direccion })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, correo, clave, direccion, telefono, imagen })
       });
 
       const data = await response.json();
+      console.log('Código de estado:', response.status); 
+      console.log('Respuesta del servidor:', data); 
 
       if (response.status === 201) {
         Alert.alert('✅ Registrado con éxito');
@@ -70,12 +87,7 @@ export default function RegisterScreen({ route }) {
       <TextInput style={styles.input} value={nombre} onChangeText={setNombre} />
 
       <Text style={styles.label}>Correo</Text>
-      <TextInput
-        style={styles.input}
-        value={correo}
-        onChangeText={setCorreo}
-        keyboardType="email-address"
-      />
+      <TextInput style={styles.input} value={correo} onChangeText={setCorreo} keyboardType="email-address" />
 
       <Text style={styles.label}>Contraseña</Text>
       <View style={styles.row}>
@@ -91,11 +103,27 @@ export default function RegisterScreen({ route }) {
         </TouchableOpacity>
       </View>
 
+      <Text style={styles.label}>Teléfono</Text>
+      <TextInput style={styles.input} value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
+
       <Text style={styles.label}>Dirección</Text>
       <TextInput style={styles.input} value={direccion} editable={false} />
       <TouchableOpacity style={styles.mapButton} onPress={irAMapa}>
         <Text style={styles.mapButtonText}>📍 Seleccionar en Mapa</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.mapButton} onPress={seleccionarImagen}>
+        <Text style={styles.mapButtonText}>📸 Seleccionar Imagen</Text>
+      </TouchableOpacity>
+
+      {imagen && (
+        <View style={styles.imagenContainer}>
+          <Image source={{ uri: imagen }} style={styles.imagenSeleccionada} />
+          <TouchableOpacity style={styles.borrarImagenBtn} onPress={() => setImagen(null)}>
+            <Text style={styles.borrarImagenText}>🗑️</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <TouchableOpacity style={styles.registerButton} onPress={handleRegistro}>
         <Text style={styles.registerButtonText}>Registrar</Text>
@@ -164,5 +192,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16
+  },
+  imagenContainer: {
+    position: 'relative',
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  imagenSeleccionada: {
+    width: 100,
+    height: 100,
+    borderRadius: 10
+  },
+  borrarImagenBtn: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#dc3545',
+    borderRadius: 12,
+    padding: 4,
+    zIndex: 1
+  },
+  borrarImagenText: {
+    color: '#fff',
+    fontSize: 14
   }
 });

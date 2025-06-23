@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Producto = require('./models/Producto');
-const Usuario = require('./models/Usuario'); // ✅ Nuevo modelo
+const Usuario = require('./models/Usuario'); // ✅ Modelo de usuario
 
 const app = express();
 const PORT = 3000;
@@ -15,7 +15,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/MultiLangProductApp', {
   .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' })); // ✅ Soporte para imágenes base64 grandes
 
 // ✅ Simulación de usuarios (mock)
 const usuarios = [
@@ -61,11 +61,11 @@ app.post('/api/usuarios/login', async (req, res) => {
   }
 });
 
-// ✅ Ruta para registrar usuario en MongoDB
+// ✅ Ruta para registrar usuario en MongoDB (CORREGIDA)
 app.post('/api/usuarios/register', async (req, res) => {
-  const { nombre, correo, clave, direccion } = req.body;
+  const { nombre, correo, clave, direccion, telefono, imagen } = req.body;
 
-  if (!nombre || !correo || !clave || !direccion) {
+  if (!nombre || !correo || !clave || !direccion || !telefono || !imagen) {
     return res.status(400).json({ mensaje: 'Campos incompletos' });
   }
 
@@ -75,7 +75,15 @@ app.post('/api/usuarios/register', async (req, res) => {
       return res.status(409).json({ mensaje: 'Correo ya registrado' });
     }
 
-    const nuevoUsuario = new Usuario({ nombre, correo, clave, direccion });
+    const nuevoUsuario = new Usuario({
+      nombre,
+      correo,
+      clave,
+      direccion,
+      telefono,
+      imagen
+    });
+
     await nuevoUsuario.save();
 
     res.status(201).json({ mensaje: 'Usuario registrado con éxito' });
