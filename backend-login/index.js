@@ -2,19 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const Producto = require('./models/Producto'); // Asegúrate de tener este archivo
+const Producto = require('./models/Producto');
+const Usuario = require('./models/Usuario'); // ✅ Nuevo modelo
 
 const app = express();
 const PORT = 3000;
 
-// ✅ Conexión a MongoDB local
 mongoose.connect('mongodb://127.0.0.1:27017/MultiLangProductApp', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('✅ Conectado a MongoDB'))
   .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -24,7 +23,7 @@ const usuarios = [
   { correo: 'kenjahir@gmail.com', clave: '54321', nombre: 'Ken Jahir' }
 ];
 
-// ✅ Ruta de login
+// ✅ Ruta de login simulado
 app.post('/login', (req, res) => {
   const { correo, clave } = req.body;
   const usuarioValido = usuarios.find(
@@ -39,6 +38,49 @@ app.post('/login', (req, res) => {
     });
   } else {
     return res.status(401).json({ mensaje: 'Credenciales incorrectas' });
+  }
+});
+
+// ✅ Ruta de login real con MongoDB
+app.post('/api/usuarios/login', async (req, res) => {
+  const { correo, clave } = req.body;
+
+  try {
+    const usuario = await Usuario.findOne({ correo, clave });
+    if (!usuario) {
+      return res.status(401).json({ mensaje: 'Credenciales incorrectas' });
+    }
+
+    res.status(200).json({
+      mensaje: 'Acceso correcto desde MongoDB',
+      correo: usuario.correo,
+      nombre: usuario.nombre
+    });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al verificar credenciales', error });
+  }
+});
+
+// ✅ Ruta para registrar usuario en MongoDB
+app.post('/api/usuarios/register', async (req, res) => {
+  const { nombre, correo, clave, direccion } = req.body;
+
+  if (!nombre || !correo || !clave || !direccion) {
+    return res.status(400).json({ mensaje: 'Campos incompletos' });
+  }
+
+  try {
+    const yaExiste = await Usuario.findOne({ correo });
+    if (yaExiste) {
+      return res.status(409).json({ mensaje: 'Correo ya registrado' });
+    }
+
+    const nuevoUsuario = new Usuario({ nombre, correo, clave, direccion });
+    await nuevoUsuario.save();
+
+    res.status(201).json({ mensaje: 'Usuario registrado con éxito' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al registrar usuario', error });
   }
 });
 
@@ -62,10 +104,8 @@ app.post('/productos/:correo', async (req, res) => {
       return res.status(400).json({ mensaje: 'El cuerpo debe ser un arreglo de productos' });
     }
 
-    // Elimina productos anteriores de ese usuario
     await Producto.deleteMany({ correoUsuario: correo });
 
-    // Añade productos con el correo correspondiente
     const productosConCorreo = nuevosProductos.map(p => ({
       ...p,
       correoUsuario: correo
@@ -99,12 +139,7 @@ app.get('/insertar-prueba', async (req, res) => {
   }
 });
 
-// ✅ Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
-});
-
-// 🔥 Ruta para eliminar todos los productos (¡solo para pruebas!)
+// 🔥 Ruta para eliminar todos los productos
 app.delete('/eliminar-todos-productos', async (req, res) => {
   try {
     await Producto.deleteMany({});
@@ -114,7 +149,7 @@ app.delete('/eliminar-todos-productos', async (req, res) => {
   }
 });
 
-// 🔥 Ruta para eliminar productos por correo (solo los de un usuario)
+// 🔥 Ruta para eliminar productos por correo
 app.delete('/eliminar-productos/:correo', async (req, res) => {
   try {
     const correo = req.params.correo;
@@ -123,4 +158,9 @@ app.delete('/eliminar-productos/:correo', async (req, res) => {
   } catch (error) {
     res.status(500).json({ mensaje: '❌ Error al eliminar productos del usuario', error });
   }
+});
+
+// ✅ Iniciar servidor
+app.listen(PORT, () => {
+  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });

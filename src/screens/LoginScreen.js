@@ -15,44 +15,56 @@ export default function LoginScreen({ navigation }) {
   const [secureText, setSecureText] = useState(true);
 
   const handleLogin = async () => {
+  try {
+    const response = await fetch('http://192.168.0.105:3000/api/usuarios/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        correo: email,
+        clave: password,
+      }),
+    });
+
+    const text = await response.text();
+    let data;
+
     try {
-      const response = await fetch('http://192.168.0.105:3000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          correo: email,
-          clave: password,
-        }),
-      });
-
-      if (response.status === 200) {
-        const data = await response.json();
-
-        // ✅ Limpiar datos anteriores (opcional pero recomendable)
-        await AsyncStorage.removeItem('usuario');
-        await AsyncStorage.removeItem('fotoPerfilUri');
-
-        // ✅ Guardar datos actualizados
-        await AsyncStorage.setItem(
-          'usuario',
-          JSON.stringify({
-            nombre: data.nombre || 'Usuario',
-            correo: email,
-          })
-        );
-
-        Alert.alert('✅ Correcto', data.mensaje);
-        navigation.replace('Home');
-      } else {
-        const errorData = await response.json();
-        Alert.alert('❌ Error', errorData.mensaje || 'Credenciales incorrectas');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      Alert.alert('Error', 'No se pudo conectar con el servidor');
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error('❌ No se pudo parsear JSON:', text);
+      Alert.alert('Error inesperado', 'El servidor respondió con formato inválido');
+      return; // Detiene la función aquí si no es JSON válido
     }
+
+    if (response.status === 200) {
+      // ✅ Limpiar datos anteriores
+      await AsyncStorage.removeItem('usuario');
+      await AsyncStorage.removeItem('fotoPerfilUri');
+
+      // ✅ Guardar datos actualizados
+      await AsyncStorage.setItem(
+        'usuario',
+        JSON.stringify({
+          nombre: data.nombre || 'Usuario',
+          correo: email,
+        })
+      );
+
+      Alert.alert('✅ Correcto', data.mensaje);
+      navigation.replace('Home');
+    } else {
+      Alert.alert('❌ Error', data.mensaje || 'Credenciales incorrectas');
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    Alert.alert('Error de red', 'No se pudo conectar con el servidor');
+  }
+};
+
+  const irARegistro = () => {
+    navigation.navigate('Register');
   };
 
   return (
@@ -83,6 +95,10 @@ export default function LoginScreen({ navigation }) {
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={irARegistro} style={styles.linkContainer}>
+        <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
       </TouchableOpacity>
     </View>
   );
@@ -139,5 +155,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  linkContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#007BFF',
+    fontWeight: 'bold',
   },
 });
