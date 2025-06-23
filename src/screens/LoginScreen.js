@@ -7,6 +7,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.0.103:3000/login', {
+      const response = await fetch('http://192.168.0.105:3000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,6 +29,20 @@ export default function LoginScreen({ navigation }) {
 
       if (response.status === 200) {
         const data = await response.json();
+
+        // ✅ Limpiar datos anteriores (opcional pero recomendable)
+        await AsyncStorage.removeItem('usuario');
+        await AsyncStorage.removeItem('fotoPerfilUri');
+
+        // ✅ Guardar datos actualizados
+        await AsyncStorage.setItem(
+          'usuario',
+          JSON.stringify({
+            nombre: data.nombre || 'Usuario',
+            correo: email,
+          })
+        );
+
         Alert.alert('✅ Correcto', data.mensaje);
         navigation.replace('Home');
       } else {
