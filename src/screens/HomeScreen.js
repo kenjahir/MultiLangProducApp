@@ -55,7 +55,7 @@ export default function HomeScreen({ navigation }) {
         setNombreUsuario(datos.nombre || '');
         setCorreoUsuario(datos.correo || '');
 
-        const response = await fetch(`http://192.168.0.105:3000/productos/${datos.correo}`);
+        const response = await fetch(`http://192.168.0.104:3000/productos/${datos.correo}`);
         const productosMongo = await response.json();
 
         const productosConvertidos = productosMongo.map(p => ({
@@ -121,18 +121,17 @@ export default function HomeScreen({ navigation }) {
     Alert.alert('✅ Perfil actualizado');
   };
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('usuario');
-    await AsyncStorage.removeItem('fotoPerfilUri');
-    navigation.replace('Login');
-  };
+ const handleLogout = async () => {
+  await AsyncStorage.setItem('sesionCerrada', 'true'); // Solo marca que fue cerrada
+  navigation.replace('Login');
+};
 
   const guardarProductosMongo = async (productos) => {
     try {
       const usuario = await AsyncStorage.getItem('usuario');
       const datos = JSON.parse(usuario);
       const productosConFoto = productos.map(p => ({ ...p, correoUsuario: datos.correo }));
-      await fetch(`http://192.168.0.105:3000/productos/${datos.correo}`, {
+      await fetch(`http://192.168.0.104:3000/productos/${datos.correo}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productosConFoto)

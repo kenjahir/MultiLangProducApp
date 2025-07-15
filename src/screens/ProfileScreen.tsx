@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -21,13 +22,46 @@ export default function ProfileScreen() {
     }
   }, [route]);
 
+  // ✅ Verifica si hay rostro luego de volver de FaceCapture
+  useEffect(() => {
+    const guardarRostro = async () => {
+      try {
+        const rostro = await AsyncStorage.getItem('faceImage');
+        if (rostro) {
+          const correoLimpio = correo.trim().toLowerCase();
+          const res = await fetch(`http://192.168.0.104:3000/api/usuarios/guardar-rostro/${correoLimpio}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rostroBase64: rostro })
+          });
+
+          if (res.ok) {
+            console.log('📸 Rostro actualizado correctamente');
+            Alert.alert('✅ Rostro actualizado', 'Tu selfie fue guardada exitosamente');
+            await AsyncStorage.removeItem('faceImage'); // Limpia después de guardar
+          } else {
+            console.warn('⚠️ Error al guardar rostro desde perfil');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error al actualizar rostro en perfil:', error);
+      }
+    };
+
+    guardarRostro();
+  }, [route]);
+
   const handleGuardar = () => {
     Alert.alert('✅ Cambios guardados');
-    // Aquí se podría hacer un fetch PUT para guardar en backend
+    // Aquí se podría hacer un fetch PUT para guardar cambios de perfil
   };
 
   const irAMapa = () => {
     (navigation as any).navigate('MapaDireccionScreen', { regresarA: 'Profile' });
+  };
+
+  const irACaptura = () => {
+    (navigation as any).navigate('FaceCapture');
   };
 
   return (
@@ -71,6 +105,11 @@ export default function ProfileScreen() {
           <Text style={styles.mapButtonText}>📍</Text>
         </TouchableOpacity>
       </View>
+
+      {/* ✅ Botón para ir a capturar selfie */}
+      <TouchableOpacity style={styles.mapButton} onPress={irACaptura}>
+        <Text style={styles.mapButtonText}>📷 Tomar Selfie (rostro)</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleGuardar}>
         <Text style={styles.buttonText}>Guardar Cambios</Text>
