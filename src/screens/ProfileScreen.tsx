@@ -29,7 +29,7 @@ export default function ProfileScreen() {
         const rostro = await AsyncStorage.getItem('faceImage');
         if (rostro) {
           const correoLimpio = correo.trim().toLowerCase();
-          const res = await fetch(`http://192.168.0.104:3000/api/usuarios/guardar-rostro/${correoLimpio}`, {
+          const res = await fetch(`http://192.168.0.105:3000/api/usuarios/guardar-rostro/${correoLimpio}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rostroBase64: rostro })

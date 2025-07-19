@@ -35,7 +35,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch('http://192.168.194.91:3000/api/usuarios/login', {
+      const response = await fetch('http://192.168.0.105:3000/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo: correoLimpio, clave: password }),
@@ -52,7 +52,7 @@ export default function LoginScreen({ navigation }) {
         await AsyncStorage.setItem('usuario', JSON.stringify(usuario));
         await AsyncStorage.removeItem('sesionCerrada');
 
-        await fetch(`http://192.168.194.91:3000/api/usuarios/activar-biometrico/${correoLimpio}`, {
+        await fetch(`http://192.168.0.105:3000/api/usuarios/activar-biometrico/${correoLimpio}`, {
           method: 'PATCH',
         });
 
@@ -114,7 +114,7 @@ export default function LoginScreen({ navigation }) {
       const { correo } = JSON.parse(storedUser);
       const correoLimpio = correo.trim().toLowerCase();
 
-      const res = await fetch(`http://192.168.0.104:3000/api/usuarios/huella/${correoLimpio}`);
+      const res = await fetch(`http://192.168.0.105:3000/api/usuarios/huella/${correoLimpio}`);
       const data = await res.json();
 
       if (res.ok && data.biometricoHabilitado) {
@@ -179,7 +179,14 @@ export default function LoginScreen({ navigation }) {
         style={[styles.button, { backgroundColor: '#da1627ff' }]}
         onPress={handleLoginWithSelfie}
       >
-        <Text style={styles.buttonText}>Ingresar con Selfie </Text>
+        <Text style={styles.buttonText}>Ingresar con Selfie</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#fd7e14' }]}
+        onPress={() => navigation.navigate('MagicLink')}
+      >
+        <Text style={styles.buttonText}>Ingresar con Magic Link</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={irARegistro} style={styles.linkContainer}>

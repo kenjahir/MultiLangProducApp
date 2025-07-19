@@ -75,7 +75,7 @@ export default function RegisterScreen({ route }) {
     console.log('📤 Enviando selfie al backend (inicio base64):', rostro.slice(0, 100));
 
     try {
-      const response = await fetch('http://192.168.0.104:3000/api/usuarios/register', {
+      const response = await fetch('http://192.168.0.105:3000/api/usuarios/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

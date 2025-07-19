@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Redireccionando...</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 40px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+
+    h1 {
+      color: #1e88e5;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #444;
+    }
+
+    .loader {
+      margin-top: 30px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #1e88e5;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Redireccionando a tu app...</h1>
+    <p>Espere un momento. Si no pasa nada, puede cerrar esta página.</p>
+    <div class="loader"></div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = `myapp://magic-login?token=<%= token %>`;
+    }, 2000);
+  </script>
+</body>
+</html>

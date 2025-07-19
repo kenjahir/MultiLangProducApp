@@ -43,7 +43,7 @@ export async function validarRostroConSelfie(correo) {
     const { base64 } = result.assets[0];
     const base64Actual = `data:image/jpeg;base64,${base64}`;
 
-    const response = await fetch(`http://192.168.0.104:3000/api/usuarios/rostro/${correo}`);
+    const response = await fetch(`http://192.168.0.105:3000/api/usuarios/rostro/${correo}`);
     const text = await response.text();
 
     let data;
